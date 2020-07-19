@@ -5,35 +5,30 @@
 import pulp as p
 
 ##variabili del problema
-#L --> Lunghezza del Roll
-#l_i --> moduli di taglio
-#d_i --> domanda per il singolo modulo
-
 
 objects = {} ##Dizionario degli oggetti, contiene l'oggetto stesso, 
-             ##la lunghezza L ed il numero di pezzi da produrre d (cioè la domanda)
+             ##la lunghezza L ed il numero di pezzi da produrre R (cioè la domanda)
 cuttingPattern = [] ##Lista di pattern di taglio per ottenere oggetti 
-                    ##dall'insieme di una lunghezza l_i
+                    ##dall'insieme di una lunghezza W
 
 
 
   
 # Create a LP Minimization problem 
-Lp_prob = p.LpProblem('Pricing Problem - Knapsack from youtube', p.LpMaximize)  
+Lp_prob = p.LpProblem('Problem', p.LpMinimize)  
   
 # Create problem Variables  
-a = p.LpVariable("a", lowBound = 0, cat='Integer')   # Create a variable a >= 0 
-b = p.LpVariable("b", lowBound = 0, cat='Integer')   # Create a variable b >= 0 
-c = p.LpVariable("c", lowBound = 0, cat='Integer')   # Create a variable c >= 0 
-d = p.LpVariable("d", lowBound = 0, cat='Integer')   # Create a variable d >= 0 
-
-
+x = p.LpVariable("x", lowBound = 0)   # Create a variable x >= 0 
+y = p.LpVariable("y", lowBound = 0)   # Create a variable y >= 0 
   
 # Objective Function 
-Lp_prob += (1/2) * a + (1/2) * b + (1/2) * c + (1/3) * d    
+Lp_prob += 3 * x + 5 * y    
   
 # Constraints: 
-Lp_prob += 9 * a + 8 * b + 7 * c + 6 * d <= 20
+Lp_prob += 2 * x + 3 * y >= 12
+Lp_prob += -x + y <= 3
+Lp_prob += x >= 4
+Lp_prob += y <= 3
   
 # Display the problem 
 print(Lp_prob) 
@@ -42,4 +37,4 @@ status = Lp_prob.solve()   # Solver
 print(p.LpStatus[status])   # The solution status 
   
 # Printing the final solution 
-print(p.value(a), p.value(b), p.value(c), p.value(d), p.value(Lp_prob.objective))   
+print(p.value(x), p.value(y), p.value(Lp_prob.objective))   
