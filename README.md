@@ -1,1 +1,2 @@
 # ProgettoAMOD
+# Cutting Stock Monodimensionale.
