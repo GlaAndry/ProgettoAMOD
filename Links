@@ -1,2 +1,6 @@
 Video Youtube CSP + knapsack problem: https://www.youtube.com/watch?v=NoiPrt4OsQA (parte1)
                                       https://www.youtube.com/watch?v=coLQ8EfZTQI (parte2)
+
+
+utili da stack:
+    numero indefinito di variabili per il problema con pulp: https://stackoverflow.com/questions/36236617/how-do-i-generate-pulp-variables-and-constrains-without-using-exec
