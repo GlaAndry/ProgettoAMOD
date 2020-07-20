@@ -22,15 +22,15 @@ cuttingPattern = [] ##Lista di pattern di taglio per ottenere oggetti
 Lp_prob = p.LpProblem('Pricing Problem - Knapsack from youtube', p.LpMaximize)  
   
 # Create problem Variables  
-a = p.LpVariable("a", lowBound = 0, cat='Integer')   # Create a variable a >= 0 
-b = p.LpVariable("b", lowBound = 0, cat='Integer')   # Create a variable b >= 0 
-c = p.LpVariable("c", lowBound = 0, cat='Integer')   # Create a variable c >= 0 
-d = p.LpVariable("d", lowBound = 0, cat='Integer')   # Create a variable d >= 0 
+a = p.LpVariable("a", lowBound = 0, cat='Integer')   # Create a variable a >= 0 Intera
+b = p.LpVariable("b", lowBound = 0, cat='Integer')   # Create a variable b >= 0 Intera
+c = p.LpVariable("c", lowBound = 0, cat='Integer')   # Create a variable c >= 0 Intera
+d = p.LpVariable("d", lowBound = 0, cat='Integer')   # Create a variable d >= 0 Intera
 
 
   
 # Objective Function 
-Lp_prob += (1/2) * a + (1/2) * b + (1/2) * c + (1/3) * d    
+Lp_prob += (1/2) * a + (1/2) * b + (1/3) * c + (1/3) * d    
   
 # Constraints: 
 Lp_prob += 9 * a + 8 * b + 7 * c + 6 * d <= 20
