@@ -5,6 +5,8 @@
 import pulp as p
 import numpy as np
 import collections
+from numpy.linalg import inv
+import math
 
 ##variabili del problema
 #L --> Lunghezza del Roll
@@ -73,7 +75,41 @@ def determineInitialPattern(L, listOfModule):
 #print(determineInitialPattern(20, [10,2,3,4]))
 #print(determineInitialPattern(20, [9,8,7,6]))
 
+
 def numeroTagliDataDomanda(B, listOfDemand):
+    ##Questo metodo ritorna una lista che identifica il numero minimo di
+    ##tagli da effettuare data la matrice B e le rispettive domande
+    ##di prodotto.
+
+    #B: matrice nxn di tutti i tagli
+    #listOfDemanda: list --> lista di tutte le domande dei prodotti
+    #return returnCuts: list --> Lista dei tagli effettuati
+
+    returnCuts = []
+
+    C=[]
+    B_np = np.matrix(B).transpose() ##Traspongo la matrice
+    B_inverse = inv(B_np) ##rendo inversa la matrice
+    demand_np = np.array(listOfDemand)
+
+    C = np.multiply(demand_np, B_inverse) ##Eseguo la moltiplicazione con
+    ##La matrice inversa
+
+    ##Determino la lista finale dei tagli.
+    valore = 0
+    pos = 0
+    for x in C.tolist():
+        for y in range(len(listOfDemand)):
+            valore += x[y]
+            pos += 1
+        returnCuts.append(valore)
+        pos = 0
+        valore = 0
+
+    return returnCuts
+
+
+#def numeroTagliDataDomanda(B, listOfDemand):
     ##Questo metodo ritorna una lista che identifica il numero minimo di
     ##tagli da effettuare data la matrice B e le rispettive domande
     ##di prodotto.
@@ -82,13 +118,13 @@ def numeroTagliDataDomanda(B, listOfDemand):
     #listOfDemanda: list --> lista di tutte le domande dei prodotti
     #return C: list --> Lista dei tagli effettuati
 
-    C=[]
-    pos = 0
-    for list in B:
-            cuts =  listOfDemand[pos] / list[pos]
-            pos += 1
-            C.append(cuts)
-    return C
+ #   C=[]
+ #   pos = 0
+ #   for list in B:
+ #           cuts =  listOfDemand[pos] / list[pos]
+ #           pos += 1
+ #           C.append(cuts)
+ #   return C
 
 #print(numeroTagliDataDomanda(determineInitialPattern(20, [9,8,7,6]), [511,301,263,383]))
 
@@ -112,6 +148,42 @@ def totalRolls(C):
     ##i pattern di tagli fuori dalla base
 
 def determinDualValue(B, n):
+    ##Questo metodo va a determianare le variabili duali y per 
+    ##La ricerca di un nuovo pattern
+    ##In particolare per il duale si avrà YB = C_b = [1...1]
+
+    #B: matrix nxn --> Matrice di base del problema
+    #n: int --> dimensione della matrice e lunghezza di Y
+    #Yret --> Ritorno dei valori della funzione obiettivo del problema duale di pricing
+
+    Yret = []
+
+    ##Numpy function per eseguire la divisione
+    Y = np.ones(n)
+    C_b = np.ones(n)
+    B_np = np.matrix(B).transpose()
+    B_inverse = inv(B_np)
+    Y = np.multiply(C_b, B_inverse)
+    Ylist = Y.tolist()
+
+    ##Rendiamo la matrice una lista di valori
+    ##in modo tale da eliminare quelli che non sono
+    ##di nostro interesse
+    ##Determino la lista finale dei tagli.
+    valore = 0
+    pos = 0
+    
+    for y in range(n):
+        for x in Ylist:
+            valore += x[y]
+            pos += 1
+        Yret.append(valore)
+        pos = 0
+        valore = 0
+
+    return Yret
+
+def determinDualValueOLD(B, n):
     ##Questo metodo va a determianare le variabili duali y per 
     ##La ricerca di un nuovo pattern
     ##In particolare per il duale si avrà YB = C_b = [1...1]
@@ -188,18 +260,131 @@ def resolve_pricing(L, listObjectiveFunction, listInequity):
         for v in Lp_prob.variables():
             A.append(v.varValue)
 
-    return A
+    return A 
 
 
 #print('Primo problema \n\n')
 #print(resolve_pricing(20, determinDualValue(determineInitialPattern(20, [9,8,7,6]), 4), [9,8,7,6]))
 
 
-def determineExitPattern():
+def determineExitPattern(B, enteringPattern, n):
     ##Attraverso questo metodo andiamo a determinare quale pattern 
     ##deve uscire dalla base per fare spazio al nuovo pattern 
     ##di taglio ricavato.
-    return None
+
+    ##In particolare possiamo scrivere BP_j = P_i
+    ##P_J = pattern Uscente
+    ##P_i = pattern entrante
+    ##B matrice nxn
+
+    exitPattern = []
+    value = 0
+
+    P_i = np.matrix(enteringPattern)
+    B_np = np.matrix(B)
+    ePattern = np.true_divide(P_i, B_np)
+    ePatternList = ePattern.tolist()
+
+    for x in range(n):
+        for y in range(n):
+            #if(x[y] != np.Infinity) or x[y] != np.nan:
+            if(x == y):
+                value += ePatternList[x][y]
+        exitPattern.append(value)
+        value = 0
+
+    return exitPattern
+
+#print(determineExitPattern(determineInitialPattern(20, [9,8,7,6]), resolve_pricing(20, determinDualValue(determineInitialPattern(20, [9,8,7,6]), 4), [9,8,7,6]), 4))
+
+
+def determinePositionExit(exitPattern, costVector):
+    ##questo metodo permette di ritrovare il corrispondente 
+    ##thetha associato al pattern uscente, in modo tale da ritornare la 
+    ##posizione in B del pattern uscente per far posto a quello entrante.
+
+    ##return pos: Posizione del pattern uscente in B
+
+    thetha = 0
+    newTheta = 10000 #valore molto grande (BIGM)
+    pos = 0
+
+    for x in range(0,len(exitPattern)):
+        if(exitPattern[x] == 0):
+            continue
+        else: ##255.5 - x*theta >= 0 --> 255.5 >= x*theta --> tetha = 255.5/x
+            thetha = costVector[x]/exitPattern[x]
+            if(thetha < newTheta):
+                newTheta = thetha
+                pos = x    
+            
+    return pos+1
+
+
+#print(determinePositionExit(determineExitPattern(determineInitialPattern(20, [9,8,7,6]), resolve_pricing(20, determinDualValue(determineInitialPattern(20, [9,8,7,6]), 4), [9,8,7,6]), 4), numeroTagliDataDomanda(determineInitialPattern(20, [9,8,7,6]), [511,301,263,383])))
+
+
+def changeBase(B, pos, enteringPattern):
+    ##Questo metodo restituisce la nuova base sulla quale andare
+    ##nuovamente a calcolare il problema.
+
+    #B: matrix nxn --> vecchia base del problema
+    #pos: int --> determinato tramite determinePositionExit
+
+    ##return B_new: matrix nxn --> nuova base del problema.
+
+    B_new = []
+    counter = 1
+
+    for x in B:
+        if(counter == pos):
+            B_new.append(enteringPattern)
+        else:
+            B_new.append(x)
+        counter +=1
+    return B_new
+
+
+
+def roundUpSolution(solution):
+    ##Questo metodo si occupa di eseguire il rounding 
+    ##up della solzione se questa non dovesse essere 
+    ##intera.
+
+    ##sol: float --> valore della solzione non intera
+    ##return: IntSolution --> valore della solzione intera.
+
+    return math.ceil(solution)
+
+
+
+#print(changeBase(determineInitialPattern(20, [9,8,7,6]), 
+       #determinePositionExit(determineExitPattern(determineInitialPattern(20, [9,8,7,6]), resolve_pricing(20, determinDualValue(determineInitialPattern(20, [9,8,7,6]), 4), [9,8,7,6]), 4), numeroTagliDataDomanda(determineInitialPattern(20, [9,8,7,6]), [511,301,263,383])),
+       #resolve_pricing(20, determinDualValue(determineInitialPattern(20, [9,8,7,6]), 4), [9,8,7,6])))
+
+#B = determineInitialPattern(20, [9,8,7,6])
+
+#Bnew = changeBase(determineInitialPattern(20, [9,8,7,6]), 
+       #determinePositionExit(determineExitPattern(determineInitialPattern(20, [9,8,7,6]), resolve_pricing(20, determinDualValue(determineInitialPattern(20, [9,8,7,6]), 4), [9,8,7,6]), 4), numeroTagliDataDomanda(determineInitialPattern(20, [9,8,7,6]), [511,301,263,383])),
+       #resolve_pricing(20, determinDualValue(determineInitialPattern(20, [9,8,7,6]), 4), [9,8,7,6]))
+
+#print(B)
+
+#print(Bnew)
+
+
+
+
+#print(determinDualValue(Bnew, 4))
+#print(determinDualValue(B, 4))
+
+
+
+#print(resolve_pricing(20, determinDualValue(Bnew, 4), [9,8,7,6]))
+#print(numeroTagliDataDomanda(B, [511,301,263,383]))
+#print("\n")
+#print(numeroTagliDataDomanda(Bnew, [511,301,263,383]))
+#print(totalRolls(numeroTagliDataDomanda(Bnew, [511,301,263,383])))
 
 #print('\n\nSecondo problema\n\n')
 #print(resolve_pricing(20, [1/2, 1/2, 1/3, 1/3], [9,8,7,6]))

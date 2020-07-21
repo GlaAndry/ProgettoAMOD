@@ -2,12 +2,7 @@
 ##Mazzola Alessio 0279323
 
 #Import
-import pulp as p
-
-##variabili del problema
-#L --> Lunghezza del Roll
-#l_i --> moduli di taglio
-#d_i --> domanda per il singolo modulo
+import cuttingStock as cs
 
 """ Dobbiamo necessariamente andare a considerare il problema rilassato di CSP
 in quanto non si conosce ancora un algoritmo per determinare una soluzione ottima
@@ -25,34 +20,51 @@ del problema intero """
     4) Determinare nuovamente la soluzione del problmea con le nuove modalità di taglio aggiunte.
     5) Se il problema duale non presenta delle modalità di taglio migliori, allora STOP """
 
-cuttingAndDemand = {"l_i": 2 , "d_i": 5} ##Dizionario contenente il modulo di taglio l_i e la sua domanda d_i 
-             ##la lunghezza L ed il numero di pezzi da produrre R (cioè la domanda)
 
-L = 10
+##Variabili del problema:
+L = 20
+listOfModules = [9,8,7,6]
+listOdDemands = [511,301,263,383]
+n = len(listOfModules)
 
 
+def calculate_solution():
 
-  
-# Create a LP Minimization problem 
-Lp_prob = p.LpProblem('CPS Continuo', p.LpMinimize)  
-  
-# Create problem Variables  
-x = p.LpVariable("x", lowBound = 0, cat='Integer')   # Create a variable x >= 0 
-#y = p.LpVariable("y", lowBound = 0)   # Create a variable y >= 0 
-  
-# Objective Function 
-Lp_prob += x   
-  
-# Constraints: 
-Lp_prob += 2 * x >= cuttingAndDemand.get('d_i')
-  
-# Display the problem 
-print(Lp_prob) 
+    B = cs.determineInitialPattern(L,listOfModules)
+    C = cs.numeroTagliDataDomanda(B, listOdDemands)
+    Optm = cs.totalRolls(C)
+    print("Numero Di tagli data la domanda per questo pattern: ", C)
+    print("Valore soluzione corrente: ", Optm)
+    print("Valore della soluzione con roundUp: ", cs.roundUpSolution(Optm))
 
-print(cuttingAndDemand.get('d_i'))
-  
-status = Lp_prob.solve()   # Solver 
-print(p.LpStatus[status])   # The solution status 
-  
-# Printing the final solution 
-print(p.value(x),p.value(Lp_prob.objective))   
+    Y = cs.determinDualValue(B, n)
+    enteringPattern = cs.resolve_pricing(L, Y, listOfModules)
+    exitPattern = cs.determineExitPattern(B, enteringPattern, n)
+    positionExit = cs.determinePositionExit(exitPattern, C)
+    B = cs.changeBase(B, positionExit, enteringPattern)
+
+    while(True):
+        
+        C = cs.numeroTagliDataDomanda(B, listOdDemands)
+        Optm = cs.totalRolls(C)
+        print("Numero Di tagli data la domanda per questo pattern: ", C)
+        print("Valore soluzione corrente: ", Optm)
+        print("Valore della soluzione con roundUp: ", cs.roundUpSolution(Optm))
+
+        Y = cs.determinDualValue(B, n)
+        enteringPattern = cs.resolve_pricing(L, Y, listOfModules)
+        if(len(enteringPattern) == 0):
+            print("\n\nTrovata la soluzione ottima!\n")
+            print("Numero Di tagli data la domanda per questo pattern: ", C)
+            print("Valore soluzione corrente: ", Optm)
+            print("Valore della soluzione con roundUp: ", cs.roundUpSolution(Optm))
+            break
+        exitPattern = cs.determineExitPattern(B, enteringPattern, n)
+        positionExit = cs.determinePositionExit(exitPattern, C)
+        print(positionExit)
+
+        B = cs.changeBase(B, positionExit, enteringPattern)
+
+    
+
+calculate_solution()

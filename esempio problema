@@ -16,3 +16,64 @@ Matrice B : [[2,0,0,0], --> 255.5              --> 255.5 * 2 = 511
                             -------
                             600.375 --> arrotondo per eccesso --> 601 (soluzione ottima, cioè numero minimo di paper roll usati per adempiere alla domanda.)
              ##La matrice B identifica la matrice dei tagli effettuati Aj
+
+
+
+def calculate():
+
+    B = cs.determineInitialPattern(L,listOfModules)
+    #print(B)
+    C = cs.numeroTagliDataDomanda(B, listOdDemands)
+    print("Numero Di tagli data la domanda per questo pattern: ", C)
+    print("Valore soluzione corrente: ", cs.totalRolls(C))
+
+    Y = cs.determinDualValue(B, n)
+    enteringPattern = cs.resolve_pricing(L, Y, listOfModules)
+    exitPattern = cs.determineExitPattern(B, enteringPattern, n)
+
+    positionExit = cs.determinePositionExit(exitPattern, C)
+
+    B_new = cs.changeBase(B, positionExit, enteringPattern)
+    ###############################
+    print(B_new)
+
+    C = cs.numeroTagliDataDomanda(B_new, listOdDemands)
+    print("Numero Di tagli data la domanda per questo pattern: ", C)
+    print("Valore soluzione corrente: ", cs.totalRolls(C))
+
+    Y = cs.determinDualValue(B_new, n)
+    enteringPattern = cs.resolve_pricing(L, Y, listOfModules)
+    exitPattern = cs.determineExitPattern(B_new, enteringPattern, n)
+
+    positionExit = cs.determinePositionExit(exitPattern, C)
+    print(positionExit)
+
+    B_new2 = cs.changeBase(B_new, positionExit, enteringPattern)
+
+    ####################################
+
+    C = cs.numeroTagliDataDomanda(B_new2, listOdDemands)
+    print("Numero Di tagli data la domanda per questo pattern: ", C)
+    print("Valore soluzione corrente: ", cs.totalRolls(C))
+
+    Y = cs.determinDualValue(B_new2, n)
+    print(Y)
+
+    enteringPattern = cs.resolve_pricing(L, Y, listOfModules)
+    
+    if(len(enteringPattern) == 0):
+        print("Trovata la soluzione ottima!\n")
+        print("Numero Di tagli data la domanda per questo pattern: ", C)
+        print("Valore soluzione corrente: ", cs.totalRolls(C))
+    #exitPattern = cs.determineExitPattern(B_new2, enteringPattern, n)
+
+    #positionExit = cs.determinePositionExit(exitPattern, enteringPattern)
+
+    #print(positionExit)
+    #print(B_new2)
+
+    #print(A)
+
+    return None
+
+#calculate()
