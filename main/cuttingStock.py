@@ -30,10 +30,7 @@ del problema intero """
     4) Determinare nuovamente la soluzione del problema con le nuove modalità di taglio.
     5) Se il problema duale non presenta delle modalità di taglio migliori, allora STOP """
 
-#cuttingAndDemand = {"l_i": 2 , "d_i": 5} ##Dizionario contenente il modulo di taglio l_i e la sua domanda d_i 
-             ##la lunghezza L ed il numero di pezzi da produrre R (cioè la domanda)
 
-#L = 10
 
 def determineInitialPattern(L, listOfModule):
     ##Questo metodo serve per inizializzare la matrice B delle modalità
@@ -72,9 +69,6 @@ def determineInitialPattern(L, listOfModule):
      
     return B
 
-#print(determineInitialPattern(20, [10,2,3,4]))
-#print(determineInitialPattern(20, [9,8,7,6]))
-
 
 def numeroTagliDataDomanda(B, listOfDemand):
     ##Questo metodo ritorna una lista che identifica il numero minimo di
@@ -109,25 +103,6 @@ def numeroTagliDataDomanda(B, listOfDemand):
     return returnCuts
 
 
-#def numeroTagliDataDomanda(B, listOfDemand):
-    ##Questo metodo ritorna una lista che identifica il numero minimo di
-    ##tagli da effettuare data la matrice B e le rispettive domande
-    ##di prodotto.
-
-    #B: matrice nxn di tutti i tagli
-    #listOfDemanda: list --> lista di tutte le domande dei prodotti
-    #return C: list --> Lista dei tagli effettuati
-
- #   C=[]
- #   pos = 0
- #   for list in B:
- #           cuts =  listOfDemand[pos] / list[pos]
- #           pos += 1
- #           C.append(cuts)
- #   return C
-
-#print(numeroTagliDataDomanda(determineInitialPattern(20, [9,8,7,6]), [511,301,263,383]))
-
 def totalRolls(C):
     ##Questo metodo restituisce il numero totale di Roll da tagliare
     ##Data la lista C dei tagli effettuati
@@ -139,13 +114,6 @@ def totalRolls(C):
     for num in C:
         numberOfRoll = numberOfRoll + num
     return numberOfRoll
-
-#print(totalRolls(numeroTagliDataDomanda(determineInitialPattern(20, [9,8,7,6]), [511,301,263,383])))
-
-
-#def checkIfOpt():
-    ##La soluzione risulta essere ottima soilamente se C_j - Z_j per tutti 
-    ##i pattern di tagli fuori dalla base
 
 def determinDualValue(B, n):
     ##Questo metodo va a determianare le variabili duali y per 
@@ -182,38 +150,6 @@ def determinDualValue(B, n):
         valore = 0
 
     return Yret
-
-def determinDualValueOLD(B, n):
-    ##Questo metodo va a determianare le variabili duali y per 
-    ##La ricerca di un nuovo pattern
-    ##In particolare per il duale si avrà YB = C_b = [1...1]
-
-    #B: matrix nxn --> Matrice di base del problema
-    #n: int --> dimensione della matrice e lunghezza di Y
-    #Yret --> Ritorno dei valori della funzione obiettivo del problema duale di pricing
-
-    Yret = []
-
-    ##Numpy function per eseguire la divisione
-    Y = np.ones(n)
-    C_b = np.ones(n)
-    B_np = np.matrix(B)
-    Y = np.true_divide(C_b, B_np)
-    Ylist = Y.tolist()
-
-    ##Rendiamo la matrice una lista di valori
-    ##in modo tale da eliminare quelli che non sono
-    ##di nostro interesse
-    value = 0
-    for x in Ylist:
-        for y in range(n):
-            if(x[y] != np.Infinity):
-                value += x[y]
-        Yret.append(value)
-        value = 0
-    return Yret
-
-#print(determinDualValue(determineInitialPattern(20, [9,8,7,6]), 4))
 
 
 def resolve_pricing(L, listObjectiveFunction, listInequity):
@@ -263,9 +199,6 @@ def resolve_pricing(L, listObjectiveFunction, listInequity):
     return A 
 
 
-#print('Primo problema \n\n')
-#print(resolve_pricing(20, determinDualValue(determineInitialPattern(20, [9,8,7,6]), 4), [9,8,7,6]))
-
 
 def determineExitPattern(B, enteringPattern, n):
     ##Attraverso questo metodo andiamo a determinare quale pattern 
@@ -295,7 +228,6 @@ def determineExitPattern(B, enteringPattern, n):
 
     return exitPattern
 
-#print(determineExitPattern(determineInitialPattern(20, [9,8,7,6]), resolve_pricing(20, determinDualValue(determineInitialPattern(20, [9,8,7,6]), 4), [9,8,7,6]), 4))
 
 
 def determinePositionExit(exitPattern, costVector):
@@ -321,7 +253,6 @@ def determinePositionExit(exitPattern, costVector):
     return pos+1
 
 
-#print(determinePositionExit(determineExitPattern(determineInitialPattern(20, [9,8,7,6]), resolve_pricing(20, determinDualValue(determineInitialPattern(20, [9,8,7,6]), 4), [9,8,7,6]), 4), numeroTagliDataDomanda(determineInitialPattern(20, [9,8,7,6]), [511,301,263,383])))
 
 
 def changeBase(B, pos, enteringPattern):
@@ -357,34 +288,3 @@ def roundUpSolution(solution):
     return math.ceil(solution)
 
 
-
-#print(changeBase(determineInitialPattern(20, [9,8,7,6]), 
-       #determinePositionExit(determineExitPattern(determineInitialPattern(20, [9,8,7,6]), resolve_pricing(20, determinDualValue(determineInitialPattern(20, [9,8,7,6]), 4), [9,8,7,6]), 4), numeroTagliDataDomanda(determineInitialPattern(20, [9,8,7,6]), [511,301,263,383])),
-       #resolve_pricing(20, determinDualValue(determineInitialPattern(20, [9,8,7,6]), 4), [9,8,7,6])))
-
-#B = determineInitialPattern(20, [9,8,7,6])
-
-#Bnew = changeBase(determineInitialPattern(20, [9,8,7,6]), 
-       #determinePositionExit(determineExitPattern(determineInitialPattern(20, [9,8,7,6]), resolve_pricing(20, determinDualValue(determineInitialPattern(20, [9,8,7,6]), 4), [9,8,7,6]), 4), numeroTagliDataDomanda(determineInitialPattern(20, [9,8,7,6]), [511,301,263,383])),
-       #resolve_pricing(20, determinDualValue(determineInitialPattern(20, [9,8,7,6]), 4), [9,8,7,6]))
-
-#print(B)
-
-#print(Bnew)
-
-
-
-
-#print(determinDualValue(Bnew, 4))
-#print(determinDualValue(B, 4))
-
-
-
-#print(resolve_pricing(20, determinDualValue(Bnew, 4), [9,8,7,6]))
-#print(numeroTagliDataDomanda(B, [511,301,263,383]))
-#print("\n")
-#print(numeroTagliDataDomanda(Bnew, [511,301,263,383]))
-#print(totalRolls(numeroTagliDataDomanda(Bnew, [511,301,263,383])))
-
-#print('\n\nSecondo problema\n\n')
-#print(resolve_pricing(20, [1/2, 1/2, 1/3, 1/3], [9,8,7,6]))

@@ -4,27 +4,11 @@
 #Import
 import cuttingStock as cs
 
-""" Dobbiamo necessariamente andare a considerare il problema rilassato di CSP
-in quanto non si conosce ancora un algoritmo per determinare una soluzione ottima
-del problema intero """
-
-"""Possiamo dividere l'algoritmo implementativo nei seguenti passaggi:
-    1) Determinazione delle modalità di taglio iniziali, quindi si prendono
-    gli oggetti da tagliare uno alla volta e si determina quale sia la migliore
-    modalità di taglio solamente andando a considerare quell'oggetto.
-    2) Soluzione del problema rilassato con le modalità di taglio trovate.
-    3) Determinazione del problema duale di pricing (Problema di Knapsack) per 
-    determinare se qualche modalità di taglio sia migliore delle altre. In caso
-    se ne trovino di migliori, allora aggiungere la modalità di taglio al problema
-    rilassato.
-    4) Determinare nuovamente la soluzione del problmea con le nuove modalità di taglio aggiunte.
-    5) Se il problema duale non presenta delle modalità di taglio migliori, allora STOP """
-
 
 ##Variabili del problema:
-L = 20
-listOfModules = [9,8,7,6]
-listOdDemands = [511,301,263,383]
+L = 300
+listOfModules = [70,40,55,25,35,58,69,82,95]
+listOdDemands = [205,2321,143,1089,117,411,34,411,67]
 n = len(listOfModules)
 
 
