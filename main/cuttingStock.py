@@ -8,11 +8,6 @@ import collections
 from numpy.linalg import inv
 import math
 
-##variabili del problema
-#L --> Lunghezza del Roll
-#l_i --> moduli di taglio
-#d_i --> domanda per il singolo modulo
-
 """ Dobbiamo necessariamente andare a considerare il problema rilassato di CSP
 in quanto non si conosce ancora un algoritmo per determinare una soluzione ottima
 del problema intero """
@@ -21,14 +16,12 @@ del problema intero """
     1) Determinazione delle modalità di taglio iniziali, quindi si prendono
     gli oggetti da tagliare uno alla volta e si determina quale sia la migliore
     modalità di taglio solamente andando a considerare quell'oggetto.
-    2) Soluzione del problema rilassato con le modalità di taglio trovate.
-    3) Determinazione del problema duale di pricing (Problema di Knapsack) per 
-    determinare se qualche modalità di taglio sia migliore delle altre. In caso
-    se ne trovino di migliori, allora aggiungere la modalità di taglio al problema
-    rilassato. Nell'aggiunta della modalità di taglio dovremo andare a determinare quale 
-    modulo dovrà essere scartato andando a risolvere un ulteriore problema.
-    4) Determinare nuovamente la soluzione del problema con le nuove modalità di taglio.
-    5) Se il problema duale non presenta delle modalità di taglio migliori, allora STOP """
+    2) Risoluzione del problema primale e del duale associato, cioè il problema
+    di pricing (Problema di Knapsack) per 
+    determinare modalità di taglio migliori di quelle già presenti, se possibile.
+    In caso se ne trovino di migliori, allora allora la modalità di taglio viene aggiunta
+    al problema rilassato.
+    3) Iterare il procedimento fino a ricavare la soluzione cercata. """
 
 
 
@@ -46,6 +39,7 @@ def determineInitialPattern(L, listOfModule):
     n = len(listOfModule)
     initialLenght = L
 
+    ##Liste di appoggio per il metodo.
     B = []
     A = []
 
@@ -66,90 +60,60 @@ def determineInitialPattern(L, listOfModule):
         counter = 0
         L = initialLenght
             
-     
     return B
 
 
-def numeroTagliDataDomanda(B, listOfDemand):
-    ##Questo metodo ritorna una lista che identifica il numero minimo di
-    ##tagli da effettuare data la matrice B e le rispettive domande
-    ##di prodotto.
-
-    #B: matrice nxn di tutti i tagli
-    #listOfDemanda: list --> lista di tutte le domande dei prodotti
-    #return returnCuts: list --> Lista dei tagli effettuati
-
-    returnCuts = []
-
-    C=[]
-    B_np = np.matrix(B).transpose() ##Traspongo la matrice
-    B_inverse = inv(B_np) ##rendo inversa la matrice
-    demand_np = np.array(listOfDemand)
-
-    C = np.multiply(demand_np, B_inverse) ##Eseguo la moltiplicazione con
-    ##La matrice inversa
-
-    ##Determino la lista finale dei tagli.
-    valore = 0
-    pos = 0
-    for x in C.tolist():
-        for y in range(len(listOfDemand)):
-            valore += x[y]
-            pos += 1
-        returnCuts.append(valore)
-        pos = 0
-        valore = 0
-
-    return returnCuts
-
-
-def totalRolls(C):
-    ##Questo metodo restituisce il numero totale di Roll da tagliare
-    ##Data la lista C dei tagli effettuati
-
-    #return numberOfRoll: float
-
-    numberOfRoll = 0
-
-    for num in C:
-        numberOfRoll = numberOfRoll + num
-    return numberOfRoll
-
-def determinDualValue(B, n):
-    ##Questo metodo va a determianare le variabili duali y per 
-    ##La ricerca di un nuovo pattern
-    ##In particolare per il duale si avrà YB = C_b = [1...1]
-
-    #B: matrix nxn --> Matrice di base del problema
-    #n: int --> dimensione della matrice e lunghezza di Y
-    #Yret --> Ritorno dei valori della funzione obiettivo del problema duale di pricing
-
-    Yret = []
-
-    ##Numpy function per eseguire la divisione
-    Y = np.ones(n)
-    C_b = np.ones(n)
-    B_np = np.matrix(B).transpose()
-    B_inverse = inv(B_np)
-    Y = np.multiply(C_b, B_inverse)
-    Ylist = Y.tolist()
-
-    ##Rendiamo la matrice una lista di valori
-    ##in modo tale da eliminare quelli che non sono
-    ##di nostro interesse
-    ##Determino la lista finale dei tagli.
-    valore = 0
-    pos = 0
+def resolve_primal(listOfDemand, cutScheme):
+    """Questo metodo va a risolvere il problema primale. In particolare da questo 
+    andiamo a ritornare i seguenti elementi:
     
-    for y in range(n):
-        for x in Ylist:
-            valore += x[y]
-            pos += 1
-        Yret.append(valore)
-        pos = 0
-        valore = 0
+    Lp_prob : Permette di ricavare la soluzione ottima del problema
+    B : Lista di elementi utilizzata come funzione obiettivo nel problema duale
+    C : Vettore dei costi associati al problema, utilizzata per la determinazione 
+        della posizione nel metodo determinePositionExit(...)
 
-    return Yret
+    """
+    ## Liste di appoggio per il metodo.
+    B = []
+    C = []
+
+    #Creazione del problema di programmazione lineare intera
+    Lp_prob = p.LpProblem('Primal_Problem', p.LpMinimize)  
+
+    ##Creazione delle variabili
+    xs = [p.LpVariable("x{}".format(i), lowBound = 0, cat='Continuous') for i in range(len(cutScheme))]
+
+    ##Funzione obiettivo:
+    total_prof = sum(x for x in xs)
+    Lp_prob += total_prof
+    
+    ##Diseguaglianze del problema:
+
+    ####################################
+    #for z in range (len(cutScheme)):
+    #    Lp_prob += sum (h * cut[z] for h ,cut in zip(xs, cutScheme)) >= listOfDemand[z] ##Questo funziona per il metodo sostitutivo
+    ###################################
+    counter = 0
+    for x in range(len(cutScheme[0])):
+        Lp_prob += sum (h * cut[x] for h ,cut in zip(xs, cutScheme)) >= listOfDemand[x] ##Questo funziona per il metodo add
+        counter += 1
+
+    #Solver
+    print("Problema")
+    print(Lp_prob)
+
+    status = Lp_prob.solve()
+    print(p.LpStatus[status])
+    print("Objective value:", p.value(Lp_prob.objective))
+    print ('\nThe values of the variables : \n')
+    for v in Lp_prob.variables():
+        C.append(v.varValue)
+        print(v.name, "=", v.varValue)
+
+    for name, c in list(Lp_prob.constraints.items()):
+        B.append(c.pi)
+
+    return Lp_prob, B , C
 
 
 def resolve_pricing(L, listObjectiveFunction, listInequity):
@@ -162,7 +126,7 @@ def resolve_pricing(L, listObjectiveFunction, listInequity):
     #L --> int: Lunghezza del Roll
     #listObjectiveFunction: --> list: [valori della funzione obiettivo] --> i valori sono individuati dai valori del problema duale
     #listInequity --> list: [valori della diseguaglianza]
-    ##return A --> list: [Nuova base]
+    ##return A --> list: [Nuova Cutting pattern]
 
     ##Creazione della lista per la nuova base.
     A = []
@@ -171,7 +135,7 @@ def resolve_pricing(L, listObjectiveFunction, listInequity):
     Lp_prob = p.LpProblem('Pricing Problem', p.LpMaximize)  
 
     ##Creazione delle variabili
-    xs = [p.LpVariable("x{}".format(i+1), lowBound = 0, cat='Integer') for i in range(len(listObjectiveFunction))]
+    xs = [p.LpVariable("x{}".format(i), lowBound = 0, cat='Integer') for i in range(len(listObjectiveFunction))]
 
     ##Funzione obiettivo:
     total_prof = sum(x * obj for x,obj in zip(xs, listObjectiveFunction))
@@ -194,11 +158,9 @@ def resolve_pricing(L, listObjectiveFunction, listInequity):
     ##Al problema.
     if p.value(Lp_prob.objective) > 1:
         for v in Lp_prob.variables():
-            A.append(v.varValue)
+            A.append(int(v.varValue))
 
     return A 
-
-
 
 def determineExitPattern(B, enteringPattern, n):
     ##Attraverso questo metodo andiamo a determinare quale pattern 
@@ -215,12 +177,11 @@ def determineExitPattern(B, enteringPattern, n):
 
     P_i = np.matrix(enteringPattern)
     B_np = np.matrix(B)
-    ePattern = np.true_divide(P_i, B_np)
+    ePattern = np.divide(P_i, B_np)
     ePatternList = ePattern.tolist()
 
     for x in range(n):
         for y in range(n):
-            #if(x[y] != np.Infinity) or x[y] != np.nan:
             if(x == y):
                 value += ePatternList[x][y]
         exitPattern.append(value)
@@ -229,16 +190,15 @@ def determineExitPattern(B, enteringPattern, n):
     return exitPattern
 
 
-
 def determinePositionExit(exitPattern, costVector):
     ##questo metodo permette di ritrovare il corrispondente 
     ##thetha associato al pattern uscente, in modo tale da ritornare la 
     ##posizione in B del pattern uscente per far posto a quello entrante.
 
-    ##return pos: Posizione del pattern uscente in B
+    ##return pos --> int: Posizione del pattern uscente in B
 
     thetha = 0
-    newTheta = 10000 #valore molto grande (BIGM)
+    newTheta = 10000000 #valore molto grande (BIG_M)
     pos = 0
 
     for x in range(0,len(exitPattern)):
@@ -250,12 +210,29 @@ def determinePositionExit(exitPattern, costVector):
                 newTheta = thetha
                 pos = x    
             
-    return pos+1
+    return pos + 1
 
 
 
+def updateBase(oldBase, enteringPattern):
+    """Questo metodo si occupa di andare ad aggiornare la base B
+    del problema primale, andando quindi ad aggiungere la modalità
+    di taglio ricavata precedentemente per andare poi a ripetere
+    i passi dell'algoritmo
+    
+    oldBase --> list[][] : Rappresenta la base non aggiornata del problema
+    enteringPattern --> list[]: Rappresenta una lista contenente il pattern 
+                                da aggiungere alla nuova base.
+    """
+
+    oldBase.append(enteringPattern)
+    return oldBase
+
+    
 
 def changeBase(B, pos, enteringPattern):
+    """Metodo utilizzato per la versione dell'algoritmo con
+    sostituzione."""
     ##Questo metodo restituisce la nuova base sulla quale andare
     ##nuovamente a calcolare il problema.
 
@@ -273,8 +250,10 @@ def changeBase(B, pos, enteringPattern):
         else:
             B_new.append(x)
         counter +=1
-    return B_new
 
+    #print(np.matrix(B_new).transpose())
+
+    return B_new
 
 
 def roundUpSolution(solution):

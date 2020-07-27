@@ -1,0 +1,9 @@
+passo 0: Inizializzazione -->     B = cs.determineInitialPattern(L,listOfModules)
+passo 1: Soluzione del problema primale e duale: -->
+        -    D = cs.resolve_primal(listOdDemands, B) (PRIMALE)
+        -    cs.resolve_pricing(L, Y, listOfModules) (DUALE)
+
+passo 2:
+        -    se la funzione obiettivo di Y è <= 1 stop
+        -    altrimenti aggiungere lo schema di taglio ricavato a B e ripetere passo 1.
+

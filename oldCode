@@ -1,0 +1,145 @@
+n1 = len(listOdDemands)
+
+def calculate_solution():
+
+    print(n)
+    print(n1)
+    B = cs.determineInitialPattern(L,listOfModules)
+    C = cs.numeroTagliDataDomanda(B, listOdDemands)
+    print(C)
+    Optm = cs.totalRolls(C)
+    print("Numero Di tagli data la domanda per questo pattern: ", C)
+    print("Valore soluzione corrente: ", Optm)
+    print("Valore della soluzione con roundUp: ", cs.roundUpSolution(Optm))
+
+    Y = cs.determinDualValue(B, n)
+    enteringPattern = cs.resolve_pricing(L, Y, listOfModules)
+    exitPattern = cs.determineExitPattern(B, enteringPattern, n)
+    positionExit = cs.determinePositionExit(exitPattern, C)
+    print(f"Position Exit = {positionExit}")
+    B = cs.changeBase(B, positionExit, enteringPattern)
+
+    while(True):
+        try:
+            C = cs.numeroTagliDataDomanda(B, listOdDemands)
+            Optm = cs.totalRolls(C)
+            print("Numero Di tagli data la domanda per questo pattern: ", C)
+            print("Valore soluzione corrente: ", Optm)
+            print("Valore della soluzione con roundUp: ", cs.roundUpSolution(Optm))
+
+            Y = cs.determinDualValue(B, n)
+            enteringPattern = cs.resolve_pricing(L, Y, listOfModules)
+            print(enteringPattern)
+            if(len(enteringPattern) == 0):
+                print("\n\nTrovata la soluzione ottima!\n")
+                print("Numero Di tagli data la domanda per questo pattern: ", C)
+                print("Valore soluzione corrente: ", Optm)
+                print("Valore della soluzione con roundUp: ", cs.roundUpSolution(Optm))
+                break
+            exitPattern = cs.determineExitPattern(B, enteringPattern, n)
+            print(exitPattern)
+            positionExit = cs.determinePositionExit(exitPattern, C)
+            print(f"Position Exit = {positionExit}") 
+            #positionExit = int(input("Inserire un numero")) ##TESTING 
+            print(positionExit)
+
+        
+            B = cs.changeBase(B, positionExit, enteringPattern)
+        except np.linalg.LinAlgError as err:
+            if 'Singular matrix' in str(err):
+                print("\n\nE' stata ricavata la seguente soluzione:\n")
+                print("Numero Di tagli data la domanda per questo pattern: ", C)
+                print("Valore soluzione corrente: ", Optm)
+                print("Valore della soluzione con roundUp: ", cs.roundUpSolution(Optm))
+                break
+            else:
+                print(err)
+                break
+
+
+
+def iterate2(): #4,3
+
+    ##Passo 0: inizializzazione
+    B = cs.determineInitialPattern(L,listOfModules)
+    print(f"Matrice B {B}")
+    ##Passo 1: soluzione del problema primale e duale
+    D , Y , C= cs.resolve_primal(listOdDemands, B) ##Del duale prendo solamente gli scarti
+    Y = cs.determinDualValue(B, n)
+    print(f"Valore soluzione corrente: {p.value(D.objective)}")
+    print(f"Valore Y = {Y}")
+    print(f"Valore C = {C}")
+
+    enteringPattern = cs.resolve_pricing(L, Y, listOfModules)
+    print(f"Entering Pattern: {enteringPattern}")
+    #print(f"len entering = {len(enteringPattern)}")
+
+    exitPattern = cs.determineExitPattern(B, enteringPattern, n)
+    print(f"Exit = {exitPattern}")
+    positionExit = cs.determinePositionExit(exitPattern, C)
+    print(f"Position Exit = {positionExit}")
+    
+    B = cs.changeBase(B,positionExit, enteringPattern)
+    print(f"Matrice B {B}")
+
+    D , Y , C= cs.resolve_primal(listOdDemands, np.matrix(B).transpose().tolist()) ##Del duale prendo solamente gli scarti
+    Y = cs.determinDualValue(B, n)
+
+
+    print(f"Valore soluzione corrente: {p.value(D.objective)}")
+
+    print(f"Valore Y = {Y}")
+    print(f"Valore C = {C}")
+
+    enteringPattern = cs.resolve_pricing(L, Y, listOfModules)
+    print(f"Entering Pattern: {enteringPattern}")
+    #print(f"len entering = {len(enteringPattern)}")
+
+    exitPattern = cs.determineExitPattern(B, enteringPattern, n)
+    print(f"Exit = {exitPattern}")
+    positionExit = cs.determinePositionExit(exitPattern, C)
+    print(f"Position Exit = {positionExit}")
+    
+    B = cs.changeBase(B,positionExit, enteringPattern)
+    print(f"Matrice B {B}")
+
+    D , Y , C= cs.resolve_primal(listOdDemands, np.matrix(B).transpose().tolist()) ##Del duale prendo solamente gli scarti
+    print(f"Valore soluzione corrente: {p.value(D.objective)}") ##aggiustare primale che non prende bene le variabili x andando quindi a risolvere un altro problema
+
+    #print(f"Y = {Y}")
+    #print(f"C = {C}")
+
+    #enteringPattern = cs.resolve_pricing(L, Y, listOfModules)
+    #print(f"len entering = {len(enteringPattern)}")
+
+    #exitPattern = cs.determineExitPattern(B, enteringPattern, n)
+    #print(f"Exit = {exitPattern}")
+    #positionExit = cs.determinPosEx(exitPattern, C)
+    #print(f"Position Exit = {positionExit}")
+    
+    #B = cs.changeBase(B,4, enteringPattern)
+
+    #D , Y , C= cs.resolve_primal(listOdDemands, B) ##Del duale prendo solamente gli scarti
+    #print(f"Valore soluzione corrente: {p.value(D.objective)}")
+
+
+    #print(f"Y = {Y}")
+    #print(f"C = {C}")
+
+    #enteringPattern = cs.resolve_pricing(L, Y, listOfModules)
+    #exitPattern = cs.determineExitPattern(B, enteringPattern, n)
+    #print(f"Exit = {exitPattern}")
+    #positionExit = cs.determinPosEx(exitPattern, C)
+    #print(f"Position Exit = {positionExit}")
+    
+    #B = cs.changeBase(B,positionExit, enteringPattern)
+
+
+
+
+
+
+
+
+
+
