@@ -137,6 +137,11 @@ def iterate2(): #4,3
 
 
 
+def mul100(list1):
+    ret = []
+    for x in list1:
+        ret.append(x*100)
+    print(ret)
 
 
 
