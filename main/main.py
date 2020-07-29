@@ -102,7 +102,7 @@ def calculate_solution_add_method(L, listOfModules, listOdDemands, n):
     ##Passo 1: soluzione del problema primale e duale
     D , Y , C= cs.resolve_primal(listOdDemands, B) ##Del duale prendo solamente gli scarti
 
-    enteringPattern = cs.resolve_pricing(L, Y, listOfModules)
+    enteringPattern, dualObj = cs.resolve_pricing(L, Y, listOfModules)
     B = cs.updateBase(B, enteringPattern)
 
     while(True):
@@ -112,7 +112,7 @@ def calculate_solution_add_method(L, listOfModules, listOdDemands, n):
                 print("\n\nTrovata la soluzione ottima!\n")
                 print(f"Valore soluzione corrente: {p.value(D.objective)}")
                 print(f"Valore della soluzione con round-up: {cs.roundUpSolution(p.value(D.objective))}")
-                break
+                return dualObj
             else:
                 ### Counter per il numero di iterazioni
                 ### Nel caso in cui non venga ricavata una
@@ -121,21 +121,22 @@ def calculate_solution_add_method(L, listOfModules, listOdDemands, n):
                 if counter == 15:
                     print(f"Valore soluzione corrente: {p.value(D.objective)}")
                     print(f"Valore della soluzione con round-up: {cs.roundUpSolution(p.value(D.objective))}")
-                    break
+                    return dualObj
                 #####################
                 ##Passo 2: Iterazione
                 D, Y , C = cs.resolve_primal(listOdDemands, B)
                 print(f"Y = {Y}")
                 print(f"C = {C}")
-                enteringPattern = cs.resolve_pricing(L, Y, listOfModules) ##Ricavo il pattern entrante
+                enteringPattern, dualObj = cs.resolve_pricing(L, Y, listOfModules) ##Ricavo il pattern entrante
                 
                 B = cs.updateBase(B, enteringPattern) ##Aggiorno la matrice aggiungendo il nuovo pattern
 
         except np.linalg.LinAlgError as err:
             if 'Singular matrix' in str(err):
-                print("\n\nE' stata ricavata la seguente soluzione:\n")
-                print(f"Valore soluzione corrente: {p.value(D.objective)}")
-                print(f"Valore della soluzione con round-up: {cs.roundUpSolution(p.value(D.objective))}")
+                #print("\n\nE' stata ricavata la seguente soluzione:\n")
+                #print(f"Valore soluzione corrente: {p.value(D.objective)}")
+                #print(f"Valore della soluzione con round-up: {cs.roundUpSolution(p.value(D.objective))}")
+                print("L'istanza non è corretta.")
                 break
             else:
                 print(err)
@@ -150,5 +151,6 @@ def mul100(list1):
 
 
 #calculate_solution_substitute_method(L, listOfModules, listOdDemands, n)
-calculate_solution_add_method(L, listOfModules, listOfDemands, n)
+obj = calculate_solution_add_method(L, listOfModules, listOfDemands, n)
+print(obj)
 #mul100([12,45,55,33,125,1,15,78,41,45,22,41,56,23,84])

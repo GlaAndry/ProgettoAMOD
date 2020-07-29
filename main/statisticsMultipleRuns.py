@@ -19,7 +19,7 @@ if __name__ == "__main__":
     file = open("stat/prof_ALLinstances_double_run_20times.csv","a")  ##a necessario altrimenti si ha l'overwrite degli elementi già scritti.
     file.write("run, secondi\n")
     for i in range(0,20):
-        ##Istanze del professore: 0005 fino a 0044
+        ##Istanze del professore:
         start_time = time.time()
         L = 10000
         listOfModules = [4990,4919,4640,4300,4283,4225,4108,4097,4071,3971,3898,3875,3853,3833,3747,3701,3660,3388,3019,2927,2832,2823,2696,2408,1585,1546,1222,1194,1096,1049,958,876,865,835,676,636,613,583,527,515,506,484,478,425,294,186,64]

@@ -160,7 +160,7 @@ def resolve_pricing(L, listObjectiveFunction, listInequity):
         for v in Lp_prob.variables():
             A.append(int(v.varValue))
 
-    return A 
+    return A, p.value(Lp_prob.objective)
 
 def determineExitPattern(B, enteringPattern, n):
     ##Attraverso questo metodo andiamo a determinare quale pattern 
