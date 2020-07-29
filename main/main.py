@@ -21,7 +21,7 @@ import time
 
 ##MIE
 L = 10000
-listOfModules = [1,2,4,8,16,50,100,200,400,500,1000,2000,2500,5000,10000]
+listOfModules = [1,2,4,8,16,50,100,200,400,500,1000,2000,2500,5000,8710]
 #listOfDemands = [12,45,55,33,125,1,15,78,41,45,22,41,56,23,84]
 listOfDemands = [1200, 4500, 5500, 3300, 12500, 100, 1500, 7800, 4100, 4500, 2200, 4100, 5600, 2300, 8400]
 
@@ -111,7 +111,7 @@ def calculate_solution_add_method(L, listOfModules, listOdDemands, n):
             if(len(enteringPattern) == 0): ##Controllo se ho ottenuto la soluzione ottima.
                 print("\n\nTrovata la soluzione ottima!\n")
                 print(f"Valore soluzione corrente: {p.value(D.objective)}")
-                print(f"Valore della soluzione con round-up: {cs.roundUpSolution(p.value(D.objective))}")
+                print(f"Valore della soluzione con round-up: {cs.roundUpSolution(C)}")
                 return dualObj
             else:
                 ### Counter per il numero di iterazioni
@@ -120,7 +120,7 @@ def calculate_solution_add_method(L, listOfModules, listOdDemands, n):
                 counter += 1
                 if counter == 15:
                     print(f"Valore soluzione corrente: {p.value(D.objective)}")
-                    print(f"Valore della soluzione con round-up: {cs.roundUpSolution(p.value(D.objective))}")
+                    print(f"Valore della soluzione con round-up: {cs.roundUpSolution(C)}")
                     return dualObj
                 #####################
                 ##Passo 2: Iterazione
@@ -152,5 +152,5 @@ def mul100(list1):
 
 #calculate_solution_substitute_method(L, listOfModules, listOdDemands, n)
 obj = calculate_solution_add_method(L, listOfModules, listOfDemands, n)
-print(obj)
+#print(obj)
 #mul100([12,45,55,33,125,1,15,78,41,45,22,41,56,23,84])

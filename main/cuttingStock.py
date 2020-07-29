@@ -256,14 +256,17 @@ def changeBase(B, pos, enteringPattern):
     return B_new
 
 
-def roundUpSolution(solution):
+def roundUpSolution(solutionList):
     ##Questo metodo si occupa di eseguire il rounding 
     ##up della solzione se questa non dovesse essere 
     ##intera.
 
-    ##sol: float --> valore della solzione non intera
+    ##solutionList: list[] --> lista di valori della soluzione (interi e non)
     ##return: IntSolution --> valore della solzione intera.
+    solValue = 0
+    for x in solutionList:
+        solValue += math.ceil(x)
 
-    return math.ceil(solution)
+    return solValue
 
 
