@@ -20,10 +20,15 @@ import time
 
 
 ##MIE
-L = 10000
-listOfModules = [1,2,4,8,16,50,100,200,400,500,1000,2000,2500,5000,8710]
+#L = 10000
+#listOfModules = [1,2,4,8,16,50,100,200,400,500,1000,2000,2500,5000,8710]
 #listOfDemands = [12,45,55,33,125,1,15,78,41,45,22,41,56,23,84]
-listOfDemands = [1200, 4500, 5500, 3300, 12500, 100, 1500, 7800, 4100, 4500, 2200, 4100, 5600, 2300, 8400]
+#listOfDemands = [1200, 4500, 5500, 3300, 12500, 100, 1500, 7800, 4100, 4500, 2200, 4100, 5600, 2300, 8400]
+
+L = 110
+listOfModules = [70,40,55,25,35]
+listOfDemands = [205,2321,143,1089,117]
+#listOfDemands = [20500, 232100, 14300, 108900, 11700]
 
 #L = 1500
 #listOfModules = [1, 2, 4, 5, 8, 10, 20, 25, 40, 50, 100, 125, 200, 250, 500, 1000]
@@ -64,9 +69,13 @@ def calculate_solution_substitute_method(L, listOfModules, listOdDemands, n):
             enteringPattern = cs.resolve_pricing(L, Y, listOfModules) ##Ricavo il pattern entrante
 
             if(len(enteringPattern) == 0):
+
+                
+
                 print("\n\nTrovata la soluzione ottima!\n")
                 print(f"Valore soluzione corrente: {p.value(D.objective)}")
                 print(f"Valore della soluzione con round-up: {cs.roundUpSolution(p.value(D.objective))}")
+                
                 break
             exitPattern = cs.determineExitPattern(B, enteringPattern, n)
             print(f"Exit = {exitPattern}")
@@ -109,10 +118,15 @@ def calculate_solution_add_method(L, listOfModules, listOdDemands, n):
         try:
 
             if(len(enteringPattern) == 0): ##Controllo se ho ottenuto la soluzione ottima.
+                err_abs = cs.roundUpSolution(C)-p.value(D.objective)
+                err_apx = (cs.roundUpSolution(C)-p.value(D.objective))/cs.roundUpSolution(C)
+
                 print("\n\nTrovata la soluzione ottima!\n")
                 print(f"Valore soluzione corrente: {p.value(D.objective)}")
                 print(f"Valore della soluzione con round-up: {cs.roundUpSolution(C)}")
-                return dualObj
+                print(f"Valore dell'errore Assoluto: {err_abs}")
+                print(f"Valore dell'errore Relativo: {err_apx}")
+                return dualObj , err_abs, err_apx
             else:
                 ### Counter per il numero di iterazioni
                 ### Nel caso in cui non venga ricavata una
@@ -121,7 +135,7 @@ def calculate_solution_add_method(L, listOfModules, listOdDemands, n):
                 if counter == 15:
                     print(f"Valore soluzione corrente: {p.value(D.objective)}")
                     print(f"Valore della soluzione con round-up: {cs.roundUpSolution(C)}")
-                    return dualObj
+                    return dualObj, 0, 0
                 #####################
                 ##Passo 2: Iterazione
                 D, Y , C = cs.resolve_primal(listOdDemands, B)
@@ -133,9 +147,6 @@ def calculate_solution_add_method(L, listOfModules, listOdDemands, n):
 
         except np.linalg.LinAlgError as err:
             if 'Singular matrix' in str(err):
-                #print("\n\nE' stata ricavata la seguente soluzione:\n")
-                #print(f"Valore soluzione corrente: {p.value(D.objective)}")
-                #print(f"Valore della soluzione con round-up: {cs.roundUpSolution(p.value(D.objective))}")
                 print("L'istanza non è corretta.")
                 break
             else:
