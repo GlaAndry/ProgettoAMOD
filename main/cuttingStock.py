@@ -76,6 +76,8 @@ def resolve_primal(listOfDemand, cutScheme):
     ## Liste di appoggio per il metodo.
     B = []
     C = []
+    reduced_cost = []
+    isOpt = 0
 
     #Creazione del problema di programmazione lineare intera
     Lp_prob = p.LpProblem('Primal_Problem', p.LpMinimize)  
@@ -107,13 +109,24 @@ def resolve_primal(listOfDemand, cutScheme):
     print("Objective value:", p.value(Lp_prob.objective))
     print ('\nThe values of the variables : \n')
     for v in Lp_prob.variables():
+        reduced_cost.append(v.dj)
         C.append(v.varValue)
         print(v.name, "=", v.varValue)
 
     for name, c in list(Lp_prob.constraints.items()):
         B.append(c.pi)
 
-    return Lp_prob, B , C
+    ##controllo se la soluzione del primale è ottima tramite il vettore dei costi ridotti.
+    print('\nVettore dei costi ridotti: \n')
+    print(reduced_cost)
+    print('\n')
+    if(min(reduced_cost) >= 0):
+        isOpt = 1
+        return Lp_prob, B , C , isOpt
+
+
+
+    return Lp_prob, B , C , isOpt
 
 
 def resolve_pricing(L, listObjectiveFunction, listInequity):
