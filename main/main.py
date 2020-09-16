@@ -47,67 +47,6 @@ listOfDemands = [511,301,263,383] ##run1
 n = len(listOfModules)
 
 
-def calculate_solution_substitute_method(L, listOfModules, listOdDemands, n):
-    """Per andare ad eseguire questa tipologia di algoritmo bisogna andare a 
-    modificare il methodo resolve_primal(...) all'interno di 
-    cuttingStock.py per abilitare la differente tipologia di diseguaglianze
-    del problema."""
-
-    ##Passo 0: inizializzazione
-    B = cs.determineInitialPattern(L,listOfModules)
-
-    ##Passo 1: soluzione del problema primale e duale
-    D , Y , C= cs.resolve_primal(listOdDemands, B) ##Del duale prendo solamente gli scarti
-    print(f"Y = {Y}")
-    print(f"C = {C}")
-
-    enteringPattern = cs.resolve_pricing(L, Y, listOfModules)
-    exitPattern = cs.determineExitPattern(B, enteringPattern, n)
-    print(f"Exit = {exitPattern}")
-    positionExit1 = cs.determinePositionExit(exitPattern, C) 
-    print(f"Position Exit = {positionExit1}")
-    
-    B = cs.changeBase(B,positionExit1, enteringPattern)
-
-    while(True):
-        try:
-            ##Passo 2: Iterazione
-            D, Y , C= cs.resolve_primal(listOdDemands, B)
-            print(f"Y = {Y}")
-            print(f"C = {C}")
-            enteringPattern = cs.resolve_pricing(L, Y, listOfModules) ##Ricavo il pattern entrante
-
-            if(len(enteringPattern) == 0):
-
-                
-
-                print("\n\nTrovata la soluzione ottima!\n")
-                print(f"Valore soluzione corrente: {p.value(D.objective)}")
-                print(f"Valore della soluzione con round-up: {cs.roundUpSolution(p.value(D.objective))}")
-                
-                break
-            exitPattern = cs.determineExitPattern(B, enteringPattern, n)
-            print(f"Exit = {exitPattern}")
-            positionExit2 = cs.determinePositionExit(exitPattern, C) 
-            print(f"Position Exit 2 = {positionExit2}")
-
-            if positionExit1 == positionExit2:
-                print(f"Valore soluzione corrente: {p.value(D.objective)}")
-                print(f"Valore della soluzione con round-up: {cs.roundUpSolution(p.value(D.objective))}")
-                break
-
-            B = cs.changeBase(B,positionExit2, enteringPattern)
-
-        except np.linalg.LinAlgError as err:
-            if 'Singular matrix' in str(err):
-                print("\n\nE' stata ricavata la seguente soluzione:\n")
-                print(f"Valore soluzione corrente: {p.value(D.objective)}")
-                print(f"Valore della soluzione con round-up: {cs.roundUpSolution(p.value(D.objective))}")
-                break
-            else:
-                print(err)
-                break
-
 def calculate_solution_add_method_checkPrimal(L, listOfModules, listOdDemands, n):
 
     print(f"Lunghezza lista dei moduli: {len(listOfModules)}")
@@ -163,13 +102,16 @@ def calculate_solution_add_method_checkDual(L, listOfModules, listOdDemands, n):
 
     ##Passo 1: soluzione del problema primale e duale
     D , Y , C, opt= cs.resolve_primal(listOdDemands, B) ##Del duale prendo solamente gli scarti
+    ## D rappresenta il problema primale che stiamo risolvendo e viene utilizzato nel calcolo della soluzione.
+    ##Opt : intero che rappresenta se il problema primale è ottimo o meno.
+    print(f"Y = {Y}") ##Valori del problema DUALE utilizzati all'interno del problema del pricing problem per ricavare il nuovo pattern di taglio, se esiste.
+    print(f"C = {C}") ##Valori del problema PRIMALE 
 
     enteringPattern, dualObj = cs.resolve_pricing(L, Y, listOfModules)
     B = cs.updateBase(B, enteringPattern)
 
     while(True):
         try:
-
             if(len(enteringPattern) == 0): ##Controllo se ho ottenuto la soluzione ottima.
                 err_abs = cs.roundUpSolution(C)-p.value(D.objective)
                 err_apx = (cs.roundUpSolution(C)-p.value(D.objective))/cs.roundUpSolution(C)
@@ -185,7 +127,7 @@ def calculate_solution_add_method_checkDual(L, listOfModules, listOdDemands, n):
                 ### Nel caso in cui non venga ricavata una
                 ### soluzione migliore di quella ottenuta.
                 counter += 1
-                if counter == 15:
+                if counter == 10:
                     print(f"Valore soluzione corrente: {p.value(D.objective)}")
                     print(f"Valore della soluzione con round-up: {cs.roundUpSolution(C)}")
                     return dualObj, 0, 0
@@ -196,7 +138,7 @@ def calculate_solution_add_method_checkDual(L, listOfModules, listOdDemands, n):
                 print(f"C = {C}")
                 enteringPattern, dualObj = cs.resolve_pricing(L, Y, listOfModules) ##Ricavo il pattern entrante
                 
-                B = cs.updateBase(B, enteringPattern) ##Aggiorno la matrice aggiungendo il nuovo pattern
+                B = cs.updateBase(B, enteringPattern) ##Aggiorno la matrice aggiungendo il nuovo pattern ricavato dal problema di pricing
 
         except np.linalg.LinAlgError as err:
             if 'Singular matrix' in str(err):
@@ -206,6 +148,12 @@ def calculate_solution_add_method_checkDual(L, listOfModules, listOdDemands, n):
                 print(err)
                 break
 
+
+
+
+
+
+
 def mul100(list1):
     ret = []
     for x in list1:
@@ -213,7 +161,6 @@ def mul100(list1):
     print(ret)
 
 
-#calculate_solution_substitute_method(L, listOfModules, listOdDemands, n)
 obj = calculate_solution_add_method_checkDual(L, listOfModules, listOfDemands, n)
 #print(obj)
 #mul100([12,45,55,33,125,1,15,78,41,45,22,41,56,23,84])

@@ -95,10 +95,10 @@ def resolve_primal(listOfDemand, cutScheme):
     #for z in range (len(cutScheme)):
     #    Lp_prob += sum (h * cut[z] for h ,cut in zip(xs, cutScheme)) >= listOfDemand[z] ##Questo funziona per il metodo sostitutivo
     ###################################
-    counter = 0
+    #counter = 0
     for x in range(len(cutScheme[0])):
         Lp_prob += sum (h * cut[x] for h ,cut in zip(xs, cutScheme)) >= listOfDemand[x] ##Questo funziona per il metodo add
-        counter += 1
+    #    counter += 1
 
     #Solver
     print("Problema")
@@ -108,23 +108,19 @@ def resolve_primal(listOfDemand, cutScheme):
     print(p.LpStatus[status])
     print("Objective value:", p.value(Lp_prob.objective))
     print ('\nThe values of the variables : \n')
+    ##Valore primale delle variabili e vettore dei costi ridotti.
     for v in Lp_prob.variables():
         reduced_cost.append(v.dj)
         C.append(v.varValue)
         print(v.name, "=", v.varValue)
 
+    ##Valore duale delle variabili
     for name, c in list(Lp_prob.constraints.items()):
         B.append(c.pi)
-
     ##controllo se la soluzione del primale è ottima tramite il vettore dei costi ridotti.
-    print('\nVettore dei costi ridotti: \n')
-    print(reduced_cost)
-    print('\n')
     if(min(reduced_cost) >= 0):
         isOpt = 1
         return Lp_prob, B , C , isOpt
-
-
 
     return Lp_prob, B , C , isOpt
 

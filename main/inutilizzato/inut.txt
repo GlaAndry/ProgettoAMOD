@@ -1,0 +1,60 @@
+def calculate_solution_substitute_method(L, listOfModules, listOdDemands, n):
+    """Per andare ad eseguire questa tipologia di algoritmo bisogna andare a 
+    modificare il methodo resolve_primal(...) all'interno di 
+    cuttingStock.py per abilitare la differente tipologia di diseguaglianze
+    del problema."""
+
+    ##Passo 0: inizializzazione
+    B = cs.determineInitialPattern(L,listOfModules)
+
+    ##Passo 1: soluzione del problema primale e duale
+    D , Y , C= cs.resolve_primal(listOdDemands, B) ##Del duale prendo solamente gli scarti
+    print(f"Y = {Y}")
+    print(f"C = {C}")
+
+    enteringPattern = cs.resolve_pricing(L, Y, listOfModules)
+    exitPattern = cs.determineExitPattern(B, enteringPattern, n)
+    print(f"Exit = {exitPattern}")
+    positionExit1 = cs.determinePositionExit(exitPattern, C) 
+    print(f"Position Exit = {positionExit1}")
+    
+    B = cs.changeBase(B,positionExit1, enteringPattern)
+
+    while(True):
+        try:
+            ##Passo 2: Iterazione
+            D, Y , C= cs.resolve_primal(listOdDemands, B)
+            print(f"Y = {Y}")
+            print(f"C = {C}")
+            enteringPattern = cs.resolve_pricing(L, Y, listOfModules) ##Ricavo il pattern entrante
+
+            if(len(enteringPattern) == 0):
+
+                
+
+                print("\n\nTrovata la soluzione ottima!\n")
+                print(f"Valore soluzione corrente: {p.value(D.objective)}")
+                print(f"Valore della soluzione con round-up: {cs.roundUpSolution(p.value(D.objective))}")
+                
+                break
+            exitPattern = cs.determineExitPattern(B, enteringPattern, n)
+            print(f"Exit = {exitPattern}")
+            positionExit2 = cs.determinePositionExit(exitPattern, C) 
+            print(f"Position Exit 2 = {positionExit2}")
+
+            if positionExit1 == positionExit2:
+                print(f"Valore soluzione corrente: {p.value(D.objective)}")
+                print(f"Valore della soluzione con round-up: {cs.roundUpSolution(p.value(D.objective))}")
+                break
+
+            B = cs.changeBase(B,positionExit2, enteringPattern)
+
+        except np.linalg.LinAlgError as err:
+            if 'Singular matrix' in str(err):
+                print("\n\nE' stata ricavata la seguente soluzione:\n")
+                print(f"Valore soluzione corrente: {p.value(D.objective)}")
+                print(f"Valore della soluzione con round-up: {cs.roundUpSolution(p.value(D.objective))}")
+                break
+            else:
+                print(err)
+                break
